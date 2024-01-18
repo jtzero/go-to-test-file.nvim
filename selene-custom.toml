@@ -1,0 +1,8 @@
+[vim]
+any = true
+[package]
+any = true
+[it]
+any = true
+[describe]
+any = true
