@@ -5,6 +5,8 @@ local root_tests = require('go_to_test_file.root_tests')
 local path = require('go_to_test_file.path')
 local system = require('go_to_test_file.system')
 local list = require('go_to_test_file.list')
+local project = require('go_to_test_file.project')
+local peer_dunder_tests = require('go_to_test_file.peer_dunder_tests')
 
 local go_to_test_file = {
   git = git,
@@ -25,34 +27,47 @@ go_to_test_file.find_test_or_source_file = function(git_root, current_file_abs_p
   if peer.should_have_source_file(current_file_abs_path) then
     return {peer.find_source_file(current_file_abs_path), folder}
   else
-    local test_folder_path = root_tests.test_path_from_filepath(current_file_abs_path)
+    local test_folder_path = project.test_path_from_filepath(current_file_abs_path)
+    --local test_folder_path = root_tests.test_path_from_filepath(current_file_abs_path)
     local filename_no_ext = path.filename_no_ext(current_file_abs_path)
-    if test_folder_path ~= '' then
+    local match = list.match_one(test_folder_path, peer_dunder_tests.test_folder_names, ps, '/?$')
+    if match and match ~= '' then
+      local source_folder = path.dirname(test_folder_path)
+      local filename = path.basename(current_file_abs_path)
+      return {peer_dunder_tests.find_source_file(source_folder, filename), source_folder}
+    elseif test_folder_path ~= '' then
       local project_root = root_tests.project_root_from_test_folder(test_folder_path)
       local test_foldername = path.basename(test_folder_path)
       local test_filename_without_test_identifiers = project_generic.remove_test_file_name_identifiers(filename_no_ext)
       return {root_tests.find_source_file(project_root, test_foldername, test_filename_without_test_identifiers), test_folder_path}
     else
-      local peer_test_code_file = peer.find_test_file(current_file_abs_path)
-      if peer_test_code_file ~= '' then
-        return {peer_test_code_file, folder}
+      local source_folder = path.dirname(current_file_abs_path)
+      local filename = path.basename(current_file_abs_path)
+      local dunder_folder = peer_dunder_tests.folder_tests_folder(source_folder)
+      if dunder_folder ~= '' then
+        return {peer_dunder_tests.find_source_file(dunder_folder, filename), test_folder_path}
       else
-        local test_paths = root_tests.potential_test_folders(git_root)
-        local test_folder = root_tests.nearest_test_folder(current_file_abs_path, test_paths)
-        local project_root = root_tests.project_root_from_test_folder(test_folder)
-        local project_root_length = string.len(project_root .. ps)
-        local from_root = string.sub(current_file_abs_path, project_root_length + 1, -1)
-        local src_folder_name = list.match_one(from_root, project_generic.src_folder_prefixes, '^', ps, 'no_envelope')
-        local src_folder_length = string.len(src_folder_name .. ps)
-        local from_root_without_src_folder = string.sub(from_root, src_folder_length + 1, -1)
-        local from_root_without_src_folder_no_ext = vim.fn.fnamemodify(from_root_without_src_folder, ':r')
-        return {root_tests.find_test_file(from_root_without_src_folder_no_ext, test_folder), test_folder}
+        local peer_test_code_file = peer.find_test_file(current_file_abs_path)
+        if peer_test_code_file ~= '' then
+          return {peer_test_code_file, folder}
+        else
+          local test_paths = root_tests.potential_test_folders(git_root)
+          local test_folder = root_tests.nearest_test_folder(current_file_abs_path, test_paths)
+          local project_root = root_tests.project_root_from_test_folder(test_folder)
+          local project_root_length = string.len(project_root .. ps)
+          local from_root = string.sub(current_file_abs_path, project_root_length + 1, -1)
+          local src_folder_name = list.match_one(from_root, project_generic.src_folder_prefixes, '^', ps, 'no_envelope')
+          local src_folder_length = string.len(src_folder_name .. ps)
+          local from_root_without_src_folder = string.sub(from_root, src_folder_length + 1, -1)
+          local from_root_without_src_folder_no_ext = vim.fn.fnamemodify(from_root_without_src_folder, ':r')
+          return {root_tests.find_test_file(from_root_without_src_folder_no_ext, test_folder), test_folder}
+        end
       end
     end
   end
 end
 
-vim.cmd('command! FindTestOrSourceFile :lua print(GoToTestFile.find_test_or_source_file(go_to_test_file.git.repo_root_of_file(vim.fn.expand("%:p")), vim.fn.expand("%:p")))')
+vim.cmd('command! FindTestOrSourceFile :lua print(GoToTestFile.find_test_or_source_file(GoToTestFile.git.repo_root_of_file(vim.fn.expand("%:p")), vim.fn.expand("%:p"))[1])')
 
 -- rename to last resort, the above should provide some sane locations even if it cannot find the file
 go_to_test_file.find_test_or_src_code_file_folder_on_failure = function(current_file_abs_path)
@@ -60,7 +75,7 @@ go_to_test_file.find_test_or_src_code_file_folder_on_failure = function(current_
   local filepath, test_path = list.unpack(go_to_test_file.find_test_or_source_file(git_root, current_file_abs_path))
   local ps = path.separator(system.name)
 
-  if filepath == '.' .. ps then
+  if filepath == '.' .. ps or filepath == '' then
     if test_path ~= '' then
       return test_path
     else

@@ -21,6 +21,9 @@ path.basename = function(filepath)
 end
 
 path.dirname = function(filepath)
+  if filepath == '' then
+    return ''
+  end
   return vim.fn.fnamemodify(filepath, ":h")
 end
 

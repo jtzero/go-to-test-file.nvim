@@ -1,0 +1,20 @@
+local assert = require('luassert')
+
+local path = require('go_to_test_file.path')
+local system = require('go_to_test_file.system')
+local cmd = require('go_to_test_file.cmd')
+local project = require('go_to_test_file.project')
+
+describe('project', function()
+  describe('test_path_from_filepath', function()
+    it('returns the abs of the test folder from the path', function()
+      local file_folder_abs_path = path.script_path(system.name)
+      local cmmd = cmd.cd_string(file_folder_abs_path) .. ' && git rev-parse --show-toplevel'
+      local git_root = vim.fn.trim(vim.fn.system(cmmd))
+      local expected = path.join(path.separator(system.name), git_root, 'spec')
+      local tst = path.join(path.separator(system.name), file_folder_abs_path, 'project_spec.lua')
+      local actual = project.test_path_from_filepath(tst)
+      assert.are.equal(expected, actual)
+    end)
+  end)
+end)
