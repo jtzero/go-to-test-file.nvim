@@ -1,11 +1,11 @@
 package = "go-to-test-file.nvim"
-version = "test.init-1"
+version = "1.0.0-1"
 source = {
-   url = "git+ssh://git@github.com/jtzero/go-to-test-file.nvim.git"
+   url = "git://github.com/jtzero/go-to-test-file.nvim.git"
 }
 description = {
-   homepage = "*** please enter a project homepage ***",
-   license = "*** please specify a license ***"
+   homepage = "https://github.com/jtzero/go-to-test-file.nvim.git",
+   license = "MIT"
 }
 dependencies = {
    "lua >= 5.1, < 5.2",
@@ -22,6 +22,7 @@ build = {
       ["go-to-test-file.matrix"] = "lua/go-to-test-file/matrix.lua",
       ["go-to-test-file.path"] = "lua/go-to-test-file/path.lua",
       ["go-to-test-file.peer"] = "lua/go-to-test-file/peer.lua",
+      ["go-to-test-file.peer_dunder_tests"] = "lua/go-to-test-file/peer_dunder_tests.lua",
       ["go-to-test-file.project_generic"] = "lua/go-to-test-file/project_generic.lua",
       ["go-to-test-file.root_tests"] = "lua/go-to-test-file/root_tests.lua",
       ["go-to-test-file.str"] = "lua/go-to-test-file/str.lua",
