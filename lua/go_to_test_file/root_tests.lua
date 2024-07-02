@@ -36,13 +36,13 @@ root_tests.potential_test_folders_regex = string.format("/(%s|%s|%s)/?$", list.u
 
 root_tests.potential_test_folders = function(dir)
   local ps = path.separator(system.name())
-  local cmmd = cmd.cd_string(dir) .. " && fd --type d -p '" .. root_tests.potential_test_folders_regex .. "'"
+  local cmmd = cmd.cd_string(dir) .. " && fd -t d -p '" .. root_tests.potential_test_folders_regex .. "'"
   local result = vim.fn.system(cmmd)
   if vim.v.shell_error ~= 0 then
     error(result .. ' cmmd:' .. cmmd)
   end
   return list.map(str.split(result, '\n'), function(item)
-    local strg = item:gsub('^.' .. ps, '')
+    local strg = item:gsub('^.' .. ps, ''):gsub(ps .. '$', '')
     return path.join(ps, dir, strg)
   end)
 end

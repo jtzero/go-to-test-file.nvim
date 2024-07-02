@@ -9,7 +9,7 @@ local peer_dunder_tests = {
 
 peer_dunder_tests.find_source_file = function(source_folder, filename)
   local ps = path.separator(system.name())
-  local cmmd = cmd.cd_string(source_folder) .. " && fd --type f --max-depth=1 '" .. filename .. "' | head -1"
+  local cmmd = cmd.cd_string(source_folder) .. " && fd -t f --max-depth=1 '" .. filename .. "' | head -1"
   local output = vim.fn.trim(vim.fn.system(cmmd)):gsub('^.' .. ps, '')
   if vim.v.shell_error ~= 0 then
     error(output .. ' cmmd:' .. cmmd)
@@ -26,8 +26,8 @@ peer_dunder_tests.find_test_file = peer_dunder_tests.find_source_file
 peer_dunder_tests.folder_tests_folder = function(source_folder)
   local ps = path.separator(system.name())
   local identifiers = string.format("^%s/?$", list.unpack(peer_dunder_tests.test_folder_names))
-  local cmmd = cmd.cd_string(source_folder) .. " && fd --type d --max-depth=1 '" .. identifiers .. "' | head -1"
-  local output = vim.fn.trim(vim.fn.system(cmmd)):gsub('^.' .. ps, '')
+  local cmmd = cmd.cd_string(source_folder) .. " && fd -t d --max-depth=1 '" .. identifiers .. "' | head -1"
+  local output = vim.fn.trim(vim.fn.system(cmmd)):gsub('^.' .. ps, ''):gsub(ps .. '$', '')
   if vim.v.shell_error ~= 0 then
     error(output .. ' cmmd:' .. cmmd)
   end
