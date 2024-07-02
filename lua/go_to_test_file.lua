@@ -171,7 +171,7 @@ end
 go_to_test_file.setup = function(opts)
   opts = opts or {}
 
-  vim.tbl_extend('error', GoToTestFile.config, opts)
+  vim.tbl_extend('force', GoToTestFile.config, opts)
 
   --vim.notify_once("go-to-test-file.nvim: you must use neovim 0.8 or higher")
   -- requirements rg, realpath, git, fd
