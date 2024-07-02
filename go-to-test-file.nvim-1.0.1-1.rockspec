@@ -1,5 +1,5 @@
 package = "go-to-test-file.nvim"
-version = "1.0.0-1"
+version = "1.0.1-1"
 source = {
    url = "git://github.com/jtzero/go-to-test-file.nvim.git"
 }
