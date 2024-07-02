@@ -4,7 +4,7 @@
 
 - [Requirements](#requirements)
 - [Installation](#installation)
-
+- [Known Issues](#known-issues)
 ---
 
 ## Requirements
@@ -32,3 +32,6 @@ Install the plugin with your preferred package manager.
     },
 }
 ```
+
+## Known Issues
+- Doesn't handle [Maven style directory layout](https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html)
