@@ -176,7 +176,7 @@ go_to_test_file.setup = function(opts)
   --vim.notify_once("go-to-test-file.nvim: you must use neovim 0.8 or higher")
   -- requirements rg, realpath, git, fd
 
-  vim.api.nvim_create_user_command("FindTestOrSrcCodeFileFolderOnFailure",
+  vim.api.nvim_create_user_command("FindTestOrSourceCodeFileWithFallback",
     function()
       local filepath = go_to_test_file.find_test_or_source_file_with_fallback(vim.fn.expand("%:p"))
       if GoToTestFile.config.print_main_command_result then
