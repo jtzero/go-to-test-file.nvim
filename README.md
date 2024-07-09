@@ -25,7 +25,7 @@ Install the plugin with your preferred package manager.
     keys = {
       {
         '<M-T>',
-        '<cmd>FindTestOrSrcCodeFileFolderOnFailure<CR>',
+        '<cmd>FindTestOrSourceCodeFileWithFallback<CR>',
         mode = { "n" },
         desc = 'Opens a corresponding test file or source file if not found opens the test folder',
       },
