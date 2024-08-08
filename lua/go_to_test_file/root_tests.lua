@@ -20,9 +20,13 @@ root_tests.test_path_from_filepath = function(current_file_with_abs_path)
   end
 end
 
-root_tests.find_source_file = function(project_root_abs_path, test_foldername, test_filename_without_test_identifiers)
+root_tests.find_source_file = function(project_root_abs_path, test_foldername, path_in_test_folder, test_filename_without_test_identifiers)
   local ps = path.separator(system.name)
-  local cmmd = cmd.cd_string(project_root_abs_path) .. " && fd -t f -E '" .. test_foldername .. "' '" .. test_filename_without_test_identifiers .. "' | head -1"
+  local file_with_path = test_filename_without_test_identifiers
+  if path_in_test_folder ~= '' then
+    file_with_path = path.join(ps, path_in_test_folder, test_filename_without_test_identifiers)
+  end
+  local cmmd = cmd.cd_string(project_root_abs_path) .. " && fd -p -t f -E '" .. test_foldername .. "' '" .. file_with_path .. "([^" .. ps .. "]|$)' | head -1"
   local relative_path = vim.fn.trim(vim.fn.system(cmmd)):gsub("^." .. ps, "")
   return path.join(ps, project_root_abs_path, relative_path)
 end

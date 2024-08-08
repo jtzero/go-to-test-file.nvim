@@ -23,13 +23,17 @@ describe('root_tests', function()
   end)
   describe('find_source_file', function()
     it('returns the coressponding source file from a root test folder project', function()
+      local ps = path.separator(system.name())
       local file_folder_abs_path = path.script_path(system.name)
+      local test_file_dir = file_folder_abs_path
       local cmmd = cmd.cd_string(file_folder_abs_path) .. ' && git rev-parse --show-toplevel'
       local project_root_abs_path = vim.fn.trim(vim.fn.system(cmmd))
       local test_foldername = 'spec'
       local test_filename_without_test_identifiers = 'root_tests'
 
-      local actual = root_tests.find_source_file(project_root_abs_path, test_foldername, test_filename_without_test_identifiers)
+      local test_folder_path = path.join(ps, project_root_abs_path, test_foldername)
+      local path_in_test_folder = path.difference_between_ancestor_folder_and_sub_folder(test_folder_path, test_file_dir)
+      local actual = root_tests.find_source_file(project_root_abs_path, test_foldername, path_in_test_folder, test_filename_without_test_identifiers)
       local expected = path.join(path.separator(system.name), project_root_abs_path, 'lua', 'go_to_test_file', 'root_tests.lua')
       assert.are.equal(expected, actual)
     end)

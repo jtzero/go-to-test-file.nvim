@@ -24,7 +24,9 @@ go_to_test_file.find_src_folder_source_file_from_test_file = function(test_file_
   local project_root = root_tests.project_root_from_test_folder(test_folder_path)
   local test_foldername = path.basename(test_folder_path)
   local test_filename_without_test_identifiers = project_generic.remove_test_file_name_identifiers(filename_no_ext)
-  local result = root_tests.find_source_file(project_root, test_foldername, test_filename_without_test_identifiers)
+  local test_file_dir = path.dirname(test_file_abs_path)
+  local path_in_test_folder = path.difference_between_ancestor_folder_and_sub_folder(test_folder_path, test_file_dir)
+  local result = root_tests.find_source_file(project_root, test_foldername, path_in_test_folder, test_filename_without_test_identifiers)
   if GoToTestFile.config.print_command_result then
     print(result)
   end
@@ -102,16 +104,18 @@ go_to_test_file.find_test_or_source_file = function(git_root, current_file_abs_p
   else
     local test_folder_path = project.test_path_from_filepath(current_file_abs_path)
     local filename_no_ext = path.filename_no_ext(current_file_abs_path)
-    local match = list.match_one(test_folder_path, peer_dunder_tests.test_folder_names, ps, '/?$')
-    if match and match ~= '' then
+    local matches_test_folder = list.match_one(test_folder_path, peer_dunder_tests.test_folder_names, ps, '/?$')
+    if matches_test_folder and matches_test_folder ~= '' then
       local source_folder = path.dirname(test_folder_path)
       local filename = path.basename(current_file_abs_path)
       return {peer_dunder_tests.find_source_file(source_folder, filename), source_folder}
     elseif test_folder_path ~= '' then
       local project_root = root_tests.project_root_from_test_folder(test_folder_path)
       local test_foldername = path.basename(test_folder_path)
+      local test_file_dir = path.dirname(current_file_abs_path)
+      local path_in_test_folder = path.difference_between_ancestor_folder_and_sub_folder(test_folder_path, test_file_dir)
       local test_filename_without_test_identifiers = project_generic.remove_test_file_name_identifiers(filename_no_ext)
-      return {root_tests.find_source_file(project_root, test_foldername, test_filename_without_test_identifiers), test_folder_path}
+      return {root_tests.find_source_file(project_root, test_foldername, path_in_test_folder, test_filename_without_test_identifiers), test_folder_path}
     else
       local source_folder = path.dirname(current_file_abs_path)
       local filename = path.basename(current_file_abs_path)
