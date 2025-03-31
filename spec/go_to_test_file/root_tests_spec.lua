@@ -60,7 +60,7 @@ describe('root_tests', function()
     it('returns the test folder that is closest to the file', function()
       local ps = path.separator(system.name())
       local fixture_project_root = path.join(ps, helper.fixtures_path(), 'fake_root_tests_project')
-      local deep_path = path.join(ps, fixture_project_root, 'src', 'go_to_test', 'shopping_cart', 'main.lua')
+      local deep_path = path.join(ps, fixture_project_root, 'src', 'go_to_test_file', 'shopping_cart', 'main.lua')
       local possible_test_paths = root_tests.potential_test_folders(fixture_project_root)
       local actual = root_tests.nearest_test_folder(deep_path, possible_test_paths)
       local expected = path.join(ps, helper.fixtures_path(), 'fake_root_tests_project', 'tests')
@@ -89,5 +89,35 @@ describe('root_tests', function()
       local expected = tst_file
       assert.are.equal(expected, actual)
     end)
+    describe('when there is a matching folder name, fd/rg retuns the longest length item, first even if all matches are the same', function()
+      it('returns the the file that matches', function()
+        local ps = path.separator(system.name())
+        local file_folder_abs_path = path.script_path(system.name)
+        local cmmd = cmd.cd_string(file_folder_abs_path) .. ' && git rev-parse --show-toplevel'
+        local git_root = vim.fn.trim(vim.fn.system(cmmd))
+        local src_file = path.join(path.separator(system.name), git_root, 'fixtures', 'fake_root_tests_project', 'src', 'go_to_test_file', 'shopping_cart.lua')
+        local test_paths = root_tests.potential_test_folders(git_root)
+        local test_folder = root_tests.nearest_test_folder(src_file, test_paths)
+        local project_root = root_tests.project_root_from_test_folder(test_folder)
+        local project_root_length = string.len(project_root .. ps)
+        local from_root = string.sub(src_file, project_root_length + 1, -1)
+        local src_folder_name = list.match_one(from_root, project_generic.src_folder_prefixes, '^', ps, 'no_envelope')
+        local src_folder_length = string.len(src_folder_name .. ps)
+        local from_root_without_src_folder = string.sub(from_root, src_folder_length + 1, -1)
+        local from_root_without_src_folder_no_ext = vim.fn.fnamemodify(from_root_without_src_folder, ':r')
+        local actual = root_tests.find_test_file(from_root_without_src_folder_no_ext, test_folder)
+        local expected = path.join(
+          path.separator(system.name),
+          git_root,
+          'fixtures',
+          'fake_root_tests_project',
+          'tests',
+          'go_to_test_file',
+          'shopping_cart_spec.lua'
+        )
+        assert.are.equal(expected, actual)
+      end)
+    end)
+
   end)
 end)

@@ -63,13 +63,23 @@ root_tests.nearest_test_folder = function(source_file_folder_abs_path, possible_
   return hops[idx][2]
 end
 
+local contains_path_separator = function(path_or_file, separator)
+  return string.find(path_or_file, separator) ~= nil
+end
+
+local is_end_or_not_path_separator_pattern = function(separator)
+  return "([^" .. separator .. "]|$)"
+end
+
 root_tests.find_test_file = function(from_root_without_src_folder_no_ext, test_folder)
   local ps = path.separator(system.name())
   local cmmd = ''
-  if string.find(from_root_without_src_folder_no_ext, path.separator(system.name)) then
-    cmmd = cmd.cd_string(test_folder) .. " && fd -t f -p '" .. from_root_without_src_folder_no_ext .. "' | head -n 1 "
+  if contains_path_separator(from_root_without_src_folder_no_ext, ps) then
+    cmmd = cmd.cd_string(test_folder) .. " && fd -t f -p '" ..
+      from_root_without_src_folder_no_ext .. is_end_or_not_path_separator_pattern(ps) .. "' | head -n 1 "
   else
-    cmmd = cmd.cd_string(test_folder) .. " && fd -t f '" .. from_root_without_src_folder_no_ext .. "' | head -n 1 "
+    cmmd = cmd.cd_string(test_folder) .. " && fd -t f '" ..
+      from_root_without_src_folder_no_ext .. is_end_or_not_path_separator_pattern(ps) .. "' | head -n 1 "
   end
   local test_file_from_root = vim.fn.trim(vim.fn.system(cmmd)):gsub("^." .. ps, "")
   if vim.v.shell_error ~= 0 then
