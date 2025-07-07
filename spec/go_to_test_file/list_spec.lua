@@ -19,5 +19,6 @@ describe('list', function()
       local actual = list.match_one('zxcv/poiuy.lua', patterns, '^', '/', 'no_envelope')
       assert.are.equal('zxcv', actual)
     end)
+    -- TODO returns an empty string if nothing is found
   end)
 end)

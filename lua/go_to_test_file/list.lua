@@ -9,6 +9,8 @@ return {
   unpack = unpack_function,
   match_one = function(test_str, list, prefix, suffix, return_type)
     local exhausted = false
+    prefix = prefix or ''
+    suffix = suffix or ''
     local i = 1
     local found = ''
     while (not found) or (not exhausted) do
