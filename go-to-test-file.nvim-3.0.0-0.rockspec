@@ -1,0 +1,39 @@
+rockspec_format = '3.0'
+package = 'go-to-test-file.nvim'
+version = '3.0.0-0'
+source = {
+  url = 'git://github.com/jtzero/go-to-test-file.nvim.git',
+}
+description = {
+  homepage = 'https://github.com/jtzero/go-to-test-file.nvim.git',
+  license = 'MIT',
+}
+dependencies = {
+  'lua >= 5.1, < 6',
+}
+build = {
+  type = 'builtin',
+  modules = {
+    ['go_to_test_file'] = 'lua/go_to_test_file.lua',
+    ['go_to_test_file.cmd'] = 'lua/go_to_test_file/cmd.lua',
+    ['go_to_test_file.git'] = 'lua/go_to_test_file/git.lua',
+    ['go_to_test_file.pytest'] = 'lua/go_to_test_file/pytest.lua',
+    ['go_to_test_file.list'] = 'lua/go_to_test_file/list.lua',
+    ['go_to_test_file.matrix'] = 'lua/go_to_test_file/matrix.lua',
+    ['go_to_test_file.path'] = 'lua/go_to_test_file/path.lua',
+    ['go_to_test_file.peer'] = 'lua/go_to_test_file/peer.lua',
+    ['go_to_test_file.peer_dunder_tests'] = 'lua/go_to_test_file/peer_dunder_tests.lua',
+    ['go_to_test_file.project_generic'] = 'lua/go_to_test_file/project_generic.lua',
+    ['go_to_test_file.root_tests'] = 'lua/go_to_test_file/root_tests.lua',
+    ['go_to_test_file.str'] = 'lua/go_to_test_file/str.lua',
+    ['go_to_test_file.system'] = 'lua/go_to_test_file/system.lua',
+  },
+}
+test_dependencies = {
+  'vusted >= 2.3.4-1, < 3',
+}
+
+test = {
+  type = 'command',
+  command = 'eval $(luarocks path) && vusted spec/',
+}

@@ -14,10 +14,11 @@ jobs:
       - uses: actions/checkout@v4
       - run: sudo apt-get update -y && sudo apt-get upgrade -y
       - run: sudo apt-get install -y luarocks neovim ripgrep fzf fd-find
+      - run: nvim --version
       - run: luarocks init && git checkout .gitignore
       - run: luarocks install --deps-only ./go-to-test-file.nvim-*.rockspec
       - run: ls
       - run: echo $PATH
       - run: mkdir -p "${HOME}/.local/bin"
       - run: ln -s $(which fdfind) "$(dirname $(which fdfind))/fd" || ln -s $(which fdfind) "${HOME}/.local/bin/fd"
-      - run: lua_modules/bin/vusted
+      - run: luarocks test

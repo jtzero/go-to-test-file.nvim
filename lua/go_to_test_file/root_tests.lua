@@ -4,9 +4,10 @@ local cmd = require('go_to_test_file.cmd')
 local matrix = require('go_to_test_file.matrix')
 local list = require('go_to_test_file.list')
 local str = require('go_to_test_file.str')
+local project_generic = require('go_to_test_file.project_generic')
 
 local root_tests = {
-  test_folder_names = {'test', 'tests', 'spec'},
+  test_folder_names = { 'test', 'tests', 'spec' },
 }
 
 root_tests.test_path_from_filepath = function(current_file_with_abs_path)
@@ -20,23 +21,45 @@ root_tests.test_path_from_filepath = function(current_file_with_abs_path)
   end
 end
 
-root_tests.find_source_file = function(project_root_abs_path, test_foldername, path_in_test_folder, test_filename_without_test_identifiers)
+root_tests.remove_src_prefix_folder_from_path = function(from_branch_node, ps)
+  local src_folder_name = list.match_one(from_branch_node, project_generic.src_folder_prefixes, '^', ps, 'no_envelope')
+  local src_folder_length = string.len(src_folder_name .. ps)
+  local from_branch_node_without_src_folder = from_branch_node
+  if src_folder_length ~= 1 then
+    from_branch_node_without_src_folder = string.sub(from_branch_node, src_folder_length + 1, -1)
+  end
+  return from_branch_node_without_src_folder
+end
+
+root_tests.find_source_file = function(
+  project_root_abs_path,
+  test_foldername,
+  path_in_test_folder,
+  test_filename_without_test_identifiers
+)
   local ps = path.separator(system.name)
   local file_with_path = test_filename_without_test_identifiers
   if path_in_test_folder ~= '' then
     file_with_path = path.join(ps, path_in_test_folder, test_filename_without_test_identifiers)
   end
-  local cmmd = cmd.cd_string(project_root_abs_path) .. " && fd -p -t f -E '" .. test_foldername .. "' '" .. file_with_path .. "([^" .. ps .. "]|$)' | head -1"
-  local relative_path = vim.fn.trim(vim.fn.system(cmmd)):gsub("^." .. ps, "")
+  local cmmd = cmd.cd_string(project_root_abs_path)
+    .. " && fd -p -t f -E '"
+    .. test_foldername
+    .. "' '"
+    .. file_with_path
+    .. '([^'
+    .. ps
+    .. "]|$)' | head -1"
+  local relative_path = vim.fn.trim(vim.fn.system(cmmd)):gsub('^.' .. ps, '')
   return path.join(ps, project_root_abs_path, relative_path)
 end
 
 root_tests.project_root_from_test_folder = function(test_abs_path)
-  return vim.fn.fnamemodify(test_abs_path, ":h")
+  return vim.fn.fnamemodify(test_abs_path, ':h')
 end
 
 -- fd added end slashes to dirs after 8.4.0
-root_tests.potential_test_folders_regex = string.format("/(%s|%s|%s)/?$", list.unpack(root_tests.test_folder_names))
+root_tests.potential_test_folders_regex = string.format('/(%s|%s|%s)/?$', list.unpack(root_tests.test_folder_names))
 
 root_tests.potential_test_folders = function(dir)
   local ps = path.separator(system.name())
@@ -54,10 +77,10 @@ end
 root_tests.nearest_test_folder = function(source_file_folder_abs_path, possible_test_paths)
   local ps = path.separator(system.name())
   local hops = {}
-  for _,v in pairs(possible_test_paths) do
+  for _, v in pairs(possible_test_paths) do
     local relpath = path.difference_between_ancestor_folder_and_sub_folder(source_file_folder_abs_path, v)
     local _, count = string.gsub(relpath, ps, {})
-    table.insert(hops, {count, v})
+    table.insert(hops, { count, v })
   end
   local idx = matrix.row_with_smallest_first_item(hops)
   return hops[idx][2]
@@ -68,20 +91,27 @@ local contains_path_separator = function(path_or_file, separator)
 end
 
 local is_end_or_not_path_separator_pattern = function(separator)
-  return "([^" .. separator .. "]|$)"
+  return '([^' .. separator .. ']|$)'
 end
 
 root_tests.find_test_file = function(from_root_without_src_folder_no_ext, test_folder)
   local ps = path.separator(system.name())
   local cmmd = ''
   if contains_path_separator(from_root_without_src_folder_no_ext, ps) then
-    cmmd = cmd.cd_string(test_folder) .. " && fd -t f -p '" ..
-      from_root_without_src_folder_no_ext .. is_end_or_not_path_separator_pattern(ps) .. "' | head -n 1 "
+    cmmd = cmd.cd_string(test_folder)
+      .. " && fd -t f -p '"
+      .. root_tests.prefix_test_file(from_root_without_src_folder_no_ext)
+      .. is_end_or_not_path_separator_pattern(ps)
+      .. "' | head -n 1 "
   else
-    cmmd = cmd.cd_string(test_folder) .. " && fd -t f '" ..
-      from_root_without_src_folder_no_ext .. is_end_or_not_path_separator_pattern(ps) .. "' | head -n 1 "
+    cmmd = cmd.cd_string(test_folder)
+      .. " && fd -t f '"
+      .. root_tests.test_file_prefix()
+      .. from_root_without_src_folder_no_ext
+      .. is_end_or_not_path_separator_pattern(ps)
+      .. "' | head -n 1 "
   end
-  local test_file_from_root = vim.fn.trim(vim.fn.system(cmmd)):gsub("^." .. ps, "")
+  local test_file_from_root = vim.fn.trim(vim.fn.system(cmmd)):gsub('^.' .. ps, '')
   if vim.v.shell_error ~= 0 then
     error(test_file_from_root .. ' cmmd:' .. cmmd)
   end
@@ -90,6 +120,16 @@ root_tests.find_test_file = function(from_root_without_src_folder_no_ext, test_f
   else
     return path.join(ps, test_folder, test_file_from_root)
   end
+end
+
+root_tests.test_file_prefix = function()
+  return '(test[_-])?'
+end
+
+root_tests.prefix_test_file = function(src_file_path)
+  local ps = path.separator(system.name())
+  local lst = str.split(src_file_path, ps)
+  return path.join(ps, list.unpack(lst, 1, (#lst - 1)), root_tests.test_file_prefix() .. lst[#lst])
 end
 
 return root_tests

@@ -32,19 +32,17 @@ describe('root_tests', function()
       local test_filename_without_test_identifiers = 'root_tests'
 
       local test_folder_path = path.join(ps, project_root_abs_path, test_foldername)
-      local path_in_test_folder = path.difference_between_ancestor_folder_and_sub_folder(test_folder_path, test_file_dir)
-      local actual = root_tests.find_source_file(project_root_abs_path, test_foldername, path_in_test_folder, test_filename_without_test_identifiers)
-      local expected = path.join(path.separator(system.name), project_root_abs_path, 'lua', 'go_to_test_file', 'root_tests.lua')
+      local path_in_test_folder =
+        path.difference_between_ancestor_folder_and_sub_folder(test_folder_path, test_file_dir)
+      local actual = root_tests.find_source_file(
+        project_root_abs_path,
+        test_foldername,
+        path_in_test_folder,
+        test_filename_without_test_identifiers
+      )
+      local expected =
+        path.join(path.separator(system.name), project_root_abs_path, 'lua', 'go_to_test_file', 'root_tests.lua')
       assert.are.equal(expected, actual)
-    end)
-  end)
-  describe('project_root_from_test_folder', function()
-    it('returns the folder path one dir up', function()
-      local file_folder_abs_path = path.script_path(system.name)
-      local git_root = git.repo_root_of_folder(file_folder_abs_path)
-      local test_folder = path.join(path.separator(system.name), git_root, 'spec')
-      local actual = root_tests.project_root_from_test_folder(test_folder)
-      assert.are.equal(git_root, actual)
     end)
   end)
   describe('potential_test_folders', function()
@@ -52,7 +50,12 @@ describe('root_tests', function()
       local file_folder_abs_path = path.script_path(system.name)
       local git_root = git.repo_root_of_folder(file_folder_abs_path)
       local actual = root_tests.potential_test_folders(git_root)
-      local expected = { git_root .. '/fixtures/fake_root_tests_project/tests', git_root .. '/spec' }
+      local expected = {
+        git_root .. '/fixtures/fake_in_module_tests_project/go_to_test_file/tests',
+        git_root .. '/fixtures/fake_pytest_project/go_to_test_file/tests',
+        git_root .. '/fixtures/fake_root_tests_project/tests',
+        git_root .. '/spec',
+      }
       assert.are.same(expected, actual)
     end)
   end)
@@ -89,35 +92,45 @@ describe('root_tests', function()
       local expected = tst_file
       assert.are.equal(expected, actual)
     end)
-    describe('when there is a matching folder name, fd/rg retuns the longest length item, first even if all matches are the same', function()
-      it('returns the the file that matches', function()
-        local ps = path.separator(system.name())
-        local file_folder_abs_path = path.script_path(system.name)
-        local cmmd = cmd.cd_string(file_folder_abs_path) .. ' && git rev-parse --show-toplevel'
-        local git_root = vim.fn.trim(vim.fn.system(cmmd))
-        local src_file = path.join(path.separator(system.name), git_root, 'fixtures', 'fake_root_tests_project', 'src', 'go_to_test_file', 'shopping_cart.lua')
-        local test_paths = root_tests.potential_test_folders(git_root)
-        local test_folder = root_tests.nearest_test_folder(src_file, test_paths)
-        local project_root = root_tests.project_root_from_test_folder(test_folder)
-        local project_root_length = string.len(project_root .. ps)
-        local from_root = string.sub(src_file, project_root_length + 1, -1)
-        local src_folder_name = list.match_one(from_root, project_generic.src_folder_prefixes, '^', ps, 'no_envelope')
-        local src_folder_length = string.len(src_folder_name .. ps)
-        local from_root_without_src_folder = string.sub(from_root, src_folder_length + 1, -1)
-        local from_root_without_src_folder_no_ext = vim.fn.fnamemodify(from_root_without_src_folder, ':r')
-        local actual = root_tests.find_test_file(from_root_without_src_folder_no_ext, test_folder)
-        local expected = path.join(
-          path.separator(system.name),
-          git_root,
-          'fixtures',
-          'fake_root_tests_project',
-          'tests',
-          'go_to_test_file',
-          'shopping_cart_spec.lua'
-        )
-        assert.are.equal(expected, actual)
-      end)
-    end)
-
+    describe(
+      'when there is a matching folder name, fd/rg retuns the longest length item, first even if all matches are the same',
+      function()
+        it('returns the the file that matches', function()
+          local ps = path.separator(system.name())
+          local file_folder_abs_path = path.script_path(system.name)
+          local cmmd = cmd.cd_string(file_folder_abs_path) .. ' && git rev-parse --show-toplevel'
+          local git_root = vim.fn.trim(vim.fn.system(cmmd))
+          local src_file = path.join(
+            path.separator(system.name),
+            git_root,
+            'fixtures',
+            'fake_root_tests_project',
+            'src',
+            'go_to_test_file',
+            'shopping_cart.lua'
+          )
+          local test_paths = root_tests.potential_test_folders(git_root)
+          local test_folder = root_tests.nearest_test_folder(src_file, test_paths)
+          local project_root = root_tests.project_root_from_test_folder(test_folder)
+          local project_root_length = string.len(project_root .. ps)
+          local from_root = string.sub(src_file, project_root_length + 1, -1)
+          local src_folder_name = list.match_one(from_root, project_generic.src_folder_prefixes, '^', ps, 'no_envelope')
+          local src_folder_length = string.len(src_folder_name .. ps)
+          local from_root_without_src_folder = string.sub(from_root, src_folder_length + 1, -1)
+          local from_root_without_src_folder_no_ext = vim.fn.fnamemodify(from_root_without_src_folder, ':r')
+          local actual = root_tests.find_test_file(from_root_without_src_folder_no_ext, test_folder)
+          local expected = path.join(
+            path.separator(system.name),
+            git_root,
+            'fixtures',
+            'fake_root_tests_project',
+            'tests',
+            'go_to_test_file',
+            'shopping_cart_spec.lua'
+          )
+          assert.are.equal(expected, actual)
+        end)
+      end
+    )
   end)
 end)
