@@ -47,9 +47,11 @@ peer_dunder_tests.find_test_file = function(test_folder, source_filepath)
   else
     test_folder_with_prefix_path = path.join(ps, test_folder, prefix_path)
   end
+  local test_identifies_regex = string.format('(_|\\.|-)?(%s|%s|%s)?', list.unpack(project_generic.test_file_identifiers))
   local cmmd = cmd.cd_string(test_folder_with_prefix_path)
     .. " && fd -i -t f --max-depth=1 '"
     .. filename_no_ext
+    .. test_identifies_regex
     .. '\\.('
     .. ext
     .. '|[a-zA-Z0-9]{2,4})?$'
@@ -65,18 +67,4 @@ peer_dunder_tests.find_test_file = function(test_folder, source_filepath)
   end
 end
 
-peer_dunder_tests.folder_tests_folder = function(source_folder)
-  local ps = path.separator(system.name())
-  local identifiers = string.format('^%s/?$', list.unpack(peer_dunder_tests.test_folder_names))
-  local cmmd = cmd.cd_string(source_folder) .. " && fd -t d --max-depth=1 '" .. identifiers .. "' | head -1"
-  local output = vim.fn.trim(vim.fn.system(cmmd)):gsub('^.' .. ps, ''):gsub(ps .. '$', '')
-  if vim.v.shell_error ~= 0 then
-    error(output .. ' cmmd:' .. cmmd)
-  end
-  if output == '' then
-    return ''
-  else
-    return path.join(ps, source_folder, output)
-  end
-end
 return peer_dunder_tests
