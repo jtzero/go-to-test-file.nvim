@@ -135,23 +135,38 @@ describe('go_to_test_file', function()
         local actual = go_to_test_file.find_test_or_source_file_with_fallback(test_file)
         assert.are.equal(src_file, actual)
       end)
-      it('will find the test file of the file path passed in', function()
+      it('will find the test file of the file path passed in even if the test file is infix', function()
         local ps = path.separator(system.name())
-        local fixture_project_root = path.join(ps, helper.fixtures_path(), 'fake-peer-dunder-tests-project')
+        local fixture_project_root = path.join(ps, helper.fixtures_path(), 'fake-peer-dunder-tests-project-infix')
 
         local src_file = path.join(path.separator(system.name), fixture_project_root, 'src', 'app.js')
-        local test_file = path.join(path.separator(system.name), fixture_project_root, 'src', '__tests__', 'app.js')
+        local test_file =
+          path.join(path.separator(system.name), fixture_project_root, 'src', '__tests__', 'app.test.js')
         local actual = go_to_test_file.find_test_or_source_file_with_fallback(src_file)
         assert.are.equal(test_file, actual)
       end)
-      it('will find the src file of the file path passed in', function()
+    end)
+    describe('peer', function()
+      it('will find the test file of the src file path passed in', function()
         local ps = path.separator(system.name())
-        local fixture_project_root = path.join(ps, helper.fixtures_path(), 'fake-peer-dunder-tests-project')
+        local fixture_project_root = path.join(ps, helper.fixtures_path(), 'fake-peer-project')
 
-        local src_file = path.join(path.separator(system.name), fixture_project_root, 'src', 'app.js')
-        local test_file = path.join(path.separator(system.name), fixture_project_root, 'src', '__tests__', 'app.js')
-        local actual = go_to_test_file.find_test_or_source_file_with_fallback(test_file)
-        assert.are.equal(src_file, actual)
+        local src_file = path.join(
+          path.separator(system.name),
+          fixture_project_root,
+          'src',
+          'go-to-test-file',
+          'fake-source-code-file.ts'
+        )
+        local test_file = path.join(
+          path.separator(system.name),
+          fixture_project_root,
+          'src',
+          'go-to-test-file',
+          'fake-source-code-file.test.ts'
+        )
+        local actual = go_to_test_file.find_test_or_source_file_with_fallback(src_file)
+        assert.are.equal(test_file, actual)
       end)
     end)
   end)
