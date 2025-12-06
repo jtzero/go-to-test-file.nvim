@@ -71,28 +71,31 @@ go_to_test_file.find_test_or_source_file = function(git_root, current_file_abs_p
   elseif peer.should_have_source_file(current_file_abs_path) then
     return { peer.find_source_file(current_file_abs_path), current_folder }
   else
-    local source_folder = path.dirname(current_file_abs_path)
-    local test_folder_path = path.check_path_upwards(source_folder, project.test_folder_names)
-    local test_foldername = path.basename(test_folder_path)
-    local found_a_dunder_test_folder = list.match_one(test_foldername, peer_dunder_tests.test_folder_names) ~= ''
-    if found_a_dunder_test_folder then
-      return { peer_dunder_tests.find_test_file(test_folder_path, current_file_abs_path), test_folder_path }
-    elseif test_folder_path ~= '' then
-      local branch_node = path.dirname(test_folder_path)
-      local prefix_path_in_source_folder =
-        path.difference_between_ancestor_folder_and_sub_folder(branch_node, current_folder)
-      local from_branch_node = path.join(ps, prefix_path_in_source_folder, filename_no_ext)
-      local from_branch_node_without_src_folder = root_tests.remove_src_prefix_folder_from_path(from_branch_node, ps)
-      local from_branch_node_without_src_folder_no_ext = vim.fn.fnamemodify(from_branch_node_without_src_folder, ':r')
-      local test_file = root_tests.find_test_file(from_branch_node_without_src_folder_no_ext, test_folder_path)
-      if test_file ~= '' then
-        return { test_file, test_folder_path }
-      else
-        return { pytest.grep_test_files_from_buffer(test_folder_path), test_folder_path }
-      end
-    else
-      local peer_test_code_file = peer.find_test_file(currently_in_test_folder_path)
+    -- this should happen before the walk up incase the walk up identifies an out of scope test folder
+    local peer_test_code_file = peer.find_test_file(current_file_abs_path)
+    if peer_test_code_file ~= '' then
       return { peer_test_code_file, current_folder }
+    else
+      local source_folder = path.dirname(current_file_abs_path)
+      local test_folder_path = path.check_path_upwards(source_folder, project.test_folder_names)
+      local test_foldername = path.basename(test_folder_path)
+      local found_a_dunder_test_folder = list.match_one(test_foldername, peer_dunder_tests.test_folder_names) ~= ''
+      if found_a_dunder_test_folder then
+        return { peer_dunder_tests.find_test_file(test_folder_path, current_file_abs_path), test_folder_path }
+      elseif test_folder_path ~= '' then
+        local branch_node = path.dirname(test_folder_path)
+        local prefix_path_in_source_folder =
+          path.difference_between_ancestor_folder_and_sub_folder(branch_node, current_folder)
+        local from_branch_node = path.join(ps, prefix_path_in_source_folder, filename_no_ext)
+        local from_branch_node_without_src_folder = root_tests.remove_src_prefix_folder_from_path(from_branch_node, ps)
+        local from_branch_node_without_src_folder_no_ext = vim.fn.fnamemodify(from_branch_node_without_src_folder, ':r')
+        local test_file = root_tests.find_test_file(from_branch_node_without_src_folder_no_ext, test_folder_path)
+        if test_file ~= '' then
+          return { test_file, test_folder_path }
+        else
+          return { pytest.grep_test_files_from_buffer(test_folder_path), test_folder_path }
+        end
+      end
     end
   end
 end
