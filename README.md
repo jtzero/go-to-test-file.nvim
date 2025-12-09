@@ -37,7 +37,7 @@ Install the plugin with your preferred package manager.
 }
 ```
 
-## Folder Patterns
+## Supported Folder Patterns
 
 (Note this is language agnostic)
 
@@ -96,3 +96,6 @@ Install the plugin with your preferred package manager.
 ## Known Issues
 
 - Doesn't handle [Maven style directory layout](https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html)
+
+## Similar Projects
+- https://github.com/reprehensible/nvim-test-file
