@@ -43,7 +43,7 @@ go_to_test_file.find_test_or_source_file = function(git_root, current_file_abs_p
       local filename = path.basename(current_file_abs_path)
       local test_filename_rel_path_from_project
       local path_in_test_folder =
-        path.difference_between_ancestor_folder_and_sub_folder(currently_in_test_folder_path, branch_node)
+        path.difference_between_ancestor_folder_and_sub_folder(currently_in_test_folder_path, current_folder)
       if path_in_test_folder == '.' then
         test_filename_rel_path_from_project = filename
         path_in_test_folder = ''
@@ -52,7 +52,7 @@ go_to_test_file.find_test_or_source_file = function(git_root, current_file_abs_p
       end
       local test_filename_without_test_identifiers =
         project_generic.remove_test_file_name_identifiers(test_filename_rel_path_from_project)
-      local try_grep = pytest.grep_source_file_from_buffer(path.dirname(currently_in_test_folder_path))
+      local try_grep = pytest.grep_source_file_from_buffer(path.join(ps, branch_node, path_in_test_folder))
       if try_grep ~= '' then
         return { try_grep, path_in_test_folder }
       else
