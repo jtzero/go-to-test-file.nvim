@@ -37,6 +37,19 @@ describe('peer_dunder_tests', function()
       local expected = path.join(ps, test_folder, 'app.test.js')
       assert.are.equal(expected, actual)
     end)
+
+    it('returns an empty string when the test path is not a directory', function()
+      local ps = path.separator(system.name())
+      local fixture_project_root = path.join(ps, helper.fixtures_path(), 'fake-peer-dunder-tests-project-with-missing-folder')
+
+      local test_folder = path.join(path.separator(system.name), fixture_project_root, 'src', '__tests__')
+      local source_filepath = path.join(path.separator(system.name), fixture_project_root, 'src', 'views', 'app.js')
+
+      local actual = peer_dunder_tests.find_test_file(test_folder, source_filepath)
+
+      local expected = ''
+      assert.are.equal(expected, actual)
+    end)
   end)
   describe('find_source_file', function()
     it('will find the src file of the file path passed in', function()

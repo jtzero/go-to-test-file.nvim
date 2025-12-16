@@ -48,6 +48,9 @@ peer_dunder_tests.find_test_file = function(test_folder, source_filepath)
     test_folder_with_prefix_path = path.join(ps, test_folder, prefix_path)
   end
   local test_identifies_regex = string.format('(_|\\.|-)?(%s|%s|%s)?', list.unpack(project_generic.test_file_identifiers))
+  if vim.fn.isdirectory(test_folder_with_prefix_path) == 0 then
+    return ''
+  end
   local cmmd = cmd.cd_string(test_folder_with_prefix_path)
     .. " && fd -i -t f --max-depth=1 '"
     .. filename_no_ext
