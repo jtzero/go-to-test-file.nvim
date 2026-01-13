@@ -51,6 +51,7 @@ describe('root_tests', function()
       local git_root = git.repo_root_of_folder(file_folder_abs_path)
       local actual = root_tests.potential_test_folders(git_root)
       local expected = {
+        git_root .. '/fixtures/fake-peer-dunder-duplicate-tests-project/src/tests',
         git_root .. '/fixtures/fake_in_module_tests_project/go_to_test_file/tests',
         git_root .. '/fixtures/fake_pytest_project/go_to_test_file/tests',
         git_root .. '/fixtures/fake_root_tests_project/tests',
