@@ -6,7 +6,8 @@ local peer_dunder_tests = require('go_to_test_file.peer_dunder_tests')
 
 local project = {}
 
-project.test_folder_names = vim.list_extend(vim.list_extend({}, root_tests.test_folder_names), peer_dunder_tests.test_folder_names)
+project.test_folder_names =
+  vim.list_extend(vim.list_extend({}, peer_dunder_tests.test_folder_names), root_tests.test_folder_names)
 
 project.test_path_from_filepath = function(current_file_with_abs_path)
   local ps = path.separator(system.name)

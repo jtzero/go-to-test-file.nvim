@@ -121,10 +121,8 @@ describe('go_to_test_file', function()
         local ps = path.separator(system.name())
         local fixture_project_root = path.join(ps, helper.fixtures_path(), 'fake_root_tests_project')
 
-        local test_file =
-          path.join(ps, fixture_project_root, 'tests', 'go_to_test_file', 'shopping_cart_spec.lua')
-        local expected_src_file =
-          path.join(ps, fixture_project_root, 'src', 'go_to_test_file', 'shopping_cart.lua')
+        local test_file = path.join(ps, fixture_project_root, 'tests', 'go_to_test_file', 'shopping_cart_spec.lua')
+        local expected_src_file = path.join(ps, fixture_project_root, 'src', 'go_to_test_file', 'shopping_cart.lua')
         local actual = go_to_test_file.find_test_or_source_file_with_fallback(test_file)
         assert.are.equal(expected_src_file, actual)
       end)
@@ -145,10 +143,8 @@ describe('go_to_test_file', function()
         local ps = path.separator(system.name())
         local fixture_project_root = path.join(ps, helper.fixtures_path(), 'fake_in_module_tests_project')
 
-        local test_file =
-          path.join(ps, fixture_project_root, 'go_to_test_file', 'tests', 'shopping_cart_spec.lua')
-        local expected_src_file =
-          path.join(ps, fixture_project_root, 'go_to_test_file', 'shopping_cart.lua')
+        local test_file = path.join(ps, fixture_project_root, 'go_to_test_file', 'tests', 'shopping_cart_spec.lua')
+        local expected_src_file = path.join(ps, fixture_project_root, 'go_to_test_file', 'shopping_cart.lua')
         local actual = go_to_test_file.find_test_or_source_file_with_fallback(test_file)
         assert.are.equal(expected_src_file, actual)
       end)
@@ -158,8 +154,7 @@ describe('go_to_test_file', function()
 
         local test_file =
           path.join(ps, fixture_project_root, 'go_to_test_file', 'tests', 'shopping_cart', 'main_spec.lua')
-        local expected_src_file =
-          path.join(ps, fixture_project_root, 'go_to_test_file', 'shopping_cart', 'main.lua')
+        local expected_src_file = path.join(ps, fixture_project_root, 'go_to_test_file', 'shopping_cart', 'main.lua')
         local actual = go_to_test_file.find_test_or_source_file_with_fallback(test_file)
         assert.are.equal(expected_src_file, actual)
       end)
@@ -190,6 +185,15 @@ describe('go_to_test_file', function()
         local src_file = path.join(path.separator(system.name), fixture_project_root, 'src', 'app.js')
         local test_file =
           path.join(path.separator(system.name), fixture_project_root, 'src', '__tests__', 'app.test.js')
+        local actual = go_to_test_file.find_test_or_source_file_with_fallback(src_file)
+        assert.are.equal(test_file, actual)
+      end)
+      it('will find test file in __tests__ when both __tests__ and tests directories exist', function()
+        local ps = path.separator(system.name())
+        local fixture_project_root = path.join(ps, helper.fixtures_path(), 'fake-peer-dunder-duplicate-tests-project')
+
+        local src_file = path.join(path.separator(system.name), fixture_project_root, 'src', 'app.js')
+        local test_file = path.join(path.separator(system.name), fixture_project_root, 'src', '__tests__', 'app.js')
         local actual = go_to_test_file.find_test_or_source_file_with_fallback(src_file)
         assert.are.equal(test_file, actual)
       end)
