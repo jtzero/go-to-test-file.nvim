@@ -35,6 +35,104 @@ describe('pytest', function()
       local actual = pytest.grep_source_file_from_buffer(fixture_project_root)
       assert.are.equal(expected, actual)
     end)
+
+    it('returns empty string when directory does not exist', function()
+      local ps = path.separator(system.name())
+      local fixture_project_root = path.join(ps, helper.fixtures_path(), 'fake_pytest_project_duplicate_handling')
+      local test_file = path.join(
+        path.separator(system.name),
+        fixture_project_root,
+        'go_to_test_file',
+        'tests',
+        'test_shopping_cart.py'
+      )
+      local line_iter = io.lines(test_file)
+      local lines = {}
+      for line in line_iter do
+        table.insert(lines, line)
+      end
+      vim.api.nvim_buf_get_lines = function(_, _, _, _)
+        return lines
+      end
+
+      local nonexistent_dir = path.join(ps, fixture_project_root, 'nonexistent_directory')
+      local actual = pytest.grep_source_file_from_buffer(nonexistent_dir)
+      assert.are.equal('', actual)
+    end)
+
+    it('returns first match when only_one_match is false (default)', function()
+      local ps = path.separator(system.name())
+      local fixture_project_root = path.join(ps, helper.fixtures_path(), 'fake_pytest_project_duplicate_handling')
+      local test_file = path.join(
+        path.separator(system.name),
+        fixture_project_root,
+        'go_to_test_file',
+        'tests',
+        'test_shopping_cart.py'
+      )
+      local line_iter = io.lines(test_file)
+      local lines = {}
+      for line in line_iter do
+        table.insert(lines, line)
+      end
+      vim.api.nvim_buf_get_lines = function(_, _, _, _)
+        return lines
+      end
+
+      local search_path = path.join(ps, fixture_project_root, 'go_to_test_file', 'views')
+      local actual = pytest.grep_source_file_from_buffer(search_path)
+      assert.is_not.equal('', actual)
+      assert.is_true(actual:match('admin%.py$') ~= nil)
+    end)
+
+    it('returns match when only_one_match is true and exactly one file matches', function()
+      local ps = path.separator(system.name())
+      local fixture_project_root = path.join(ps, helper.fixtures_path(), 'fake_pytest_project_duplicate_handling')
+      local test_file = path.join(
+        path.separator(system.name),
+        fixture_project_root,
+        'go_to_test_file',
+        'tests',
+        'test_shopping_cart.py'
+      )
+      local line_iter = io.lines(test_file)
+      local lines = {}
+      for line in line_iter do
+        table.insert(lines, line)
+      end
+      vim.api.nvim_buf_get_lines = function(_, _, _, _)
+        return lines
+      end
+
+      local search_path = path.join(ps, fixture_project_root, 'go_to_test_file', 'views', 'shopping_cart')
+      local actual = pytest.grep_source_file_from_buffer(search_path, { only_one_match = true })
+      assert.is_not.equal('', actual)
+      assert.is_true(actual:match('admin%.py$') ~= nil)
+    end)
+
+    it('returns empty string when only_one_match is true and multiple files match', function()
+      local ps = path.separator(system.name())
+      local fixture_project_root = path.join(ps, helper.fixtures_path(), 'fake_pytest_project_duplicate_handling')
+      local test_file = path.join(
+        path.separator(system.name),
+        fixture_project_root,
+        'go_to_test_file',
+        'tests',
+        'test_shopping_cart.py'
+      )
+      local line_iter = io.lines(test_file)
+      local lines = {}
+      for line in line_iter do
+        table.insert(lines, line)
+      end
+      vim.api.nvim_buf_get_lines = function(_, _, _, _)
+        return lines
+      end
+
+      local search_path = path.join(ps, fixture_project_root, 'go_to_test_file', 'views')
+      local actual = pytest.grep_source_file_from_buffer(search_path, { only_one_match = true })
+      assert.are.equal('', actual)
+    end)
   end)
   describe('grep_test_files_from_buffer', function()
     it('will find the test file from the file in the buffer', function()

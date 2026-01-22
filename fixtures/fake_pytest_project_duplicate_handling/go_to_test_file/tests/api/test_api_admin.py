@@ -1,0 +1,2 @@
+class TestAdminViewSet:
+    pass
