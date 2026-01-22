@@ -3,6 +3,7 @@
 local path = require('go_to_test_file.path')
 local cmd = require('go_to_test_file.cmd')
 local system = require('go_to_test_file.system')
+local str = require('go_to_test_file.str')
 
 local pytest = {}
 
@@ -24,18 +25,27 @@ local grep_for_classes = function()
   return matches
 end
 
-pytest.grep_source_file_from_buffer = function(source_folder_path)
+pytest.grep_source_file_from_buffer = function(source_folder_path, flags)
+  flags = flags or { only_one_match = false }
   local class_names = grep_for_classes()
   if #class_names ~= 0 then
     local regex = '(' .. table.concat(class_names, '|') .. ')'
-    local cmd_for_class_grep = cmd.cd_string(source_folder_path) .. " && rg -l 'class " .. regex .. "' | head -n 1"
+    if vim.fn.isdirectory(source_folder_path) == 0 then
+      return ''
+    end
+    local cmd_for_class_grep = cmd.cd_string(source_folder_path) .. " && rg -l 'class " .. regex .. "'"
     local grepped_test_file = vim.fn.trim(vim.fn.system(cmd_for_class_grep))
     if vim.v.shell_error ~= 0 then
       error(source_folder_path .. ' cmd_for_class_grep:' .. cmd_for_class_grep)
     end
-    if grepped_test_file ~= '' then
+    local splitted = str.split(grepped_test_file, '\n')
+    local first_item = splitted[1]
+    if
+      (first_item ~= '' and not flags.only_one_match)
+      or (first_item ~= '' and flags.only_one_match and #splitted == 1)
+    then
       local ps = path.separator(system.name())
-      return path.join(ps, source_folder_path, grepped_test_file)
+      return path.join(ps, source_folder_path, first_item)
     else
       return ''
     end

@@ -56,16 +56,21 @@ go_to_test_file.find_test_or_source_file = function(git_root, current_file_abs_p
       if try_grep ~= '' then
         return { try_grep, path_in_test_folder }
       else
-        -- TODO rename root_tests
-        return {
-          root_tests.find_source_file(
-            branch_node,
-            test_foldername,
-            path_in_test_folder,
-            test_filename_without_test_identifiers
-          ),
-          currently_in_test_folder_path,
-        }
+        local wider_try_grep = pytest.grep_source_file_from_buffer(branch_node, { only_one_match = true })
+        if wider_try_grep ~= '' then
+          return { wider_try_grep, path_in_test_folder }
+        else
+          -- TODO rename root_tests
+          return {
+            root_tests.find_source_file(
+              branch_node,
+              test_foldername,
+              path_in_test_folder,
+              test_filename_without_test_identifiers
+            ),
+            currently_in_test_folder_path,
+          }
+        end
       end
     end
   elseif peer.should_have_source_file(current_file_abs_path) then
